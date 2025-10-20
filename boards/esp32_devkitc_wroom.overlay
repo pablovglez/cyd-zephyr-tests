@@ -29,7 +29,7 @@
 			mipi-max-frequency = <25000000>;
 			reg = <0>;
 			pixel-format = <0>;
-			rotation = <0>;
+			rotation = <90>;
 			width = <240>;
 			height = <320>;
 		};

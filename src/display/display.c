@@ -5,10 +5,15 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/display.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/spi.h>
+#include <zephyr/input/input.h>
 #include <stdio.h>
 #include <stdbool.h>
 
 static const struct gpio_dt_spec backlight = GPIO_DT_SPEC_GET(DT_ALIAS(backlight), gpios);
+#if defined CONFIG_CYD_ENABLE_TOUCH
+static const struct device *const touch_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_touch));
+#endif
 
 // Settings
 static const uint32_t sleep_time_ms = 50; // Target 20 FPS
@@ -22,11 +27,15 @@ lv_obj_t *counter_label;
 lv_obj_t *rect;
 lv_obj_t *circle;
 lv_obj_t *circle2;
-//lv_obj_t *button;
+#if defined CONFIG_CYD_ENABLE_TOUCH
+lv_obj_t *button;
+#endif
 lv_style_t rect_style;
 lv_style_t circle_style;
 lv_point_t rect_points[5] = {{0, 0}, {120, 0}, {120, 20}, {0, 20}, {0, 0}};
 const uint32_t circle_radius = 15;
+
+void lvgl_print_heap_info(bool dump_chunks);
 
 void init_display() {
     const struct device *display;
@@ -36,9 +45,19 @@ void init_display() {
     if (!device_is_ready(display)) {
         printk("Error: display not ready\r\n");
     }
+#if defined CONFIG_CYD_ENABLE_TOUCH
+    if (!device_is_ready(touch_dev)) {
+        printk("Error: touch not ready\r\n");
+    }
+#endif
 
     // Disable display blanking
     display_blanking_off(display);
+#ifdef CONFIG_LV_Z_MEM_POOL_SYS_HEAP
+    lvgl_print_heap_info(false);
+#else
+    printf("lvgl in malloc mode\n");
+#endif
 
     // activate Backlight
     if (gpio_is_ready_dt(&backlight)) {
@@ -47,6 +66,7 @@ void init_display() {
     }
 }
 
+#if defined CONFIG_CYD_ENABLE_TOUCH
 static void btn_event_cb(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -60,6 +80,22 @@ static void btn_event_cb(lv_event_t * e)
         lv_label_set_text_fmt(label, "Button: %d", cnt);
     }
 }
+
+lv_obj_t * create_button(int w, int h, int align, char* szLabel, void *user_data)
+{
+    lv_obj_t *btn = lv_btn_create(lv_scr_act());
+
+    lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_ALL, user_data);
+    lv_obj_set_size(btn, w, h);
+    lv_obj_align(btn, align, 0, 0);
+
+    lv_obj_t * label = lv_label_create(btn);          /*Add a label to the button*/
+    lv_label_set_text(label, szLabel);                     /*Set the labels text*/
+    lv_obj_center(label);
+
+    return btn;
+}
+#endif
 
 void draw_content() {
     static bool created = false;
@@ -125,31 +161,10 @@ void draw_content() {
     lv_obj_set_style_text_color(counter_label, lv_color_hex(0x000000), 0);
     lv_obj_align(counter_label, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_move_foreground(counter_label);
+#if defined CONFIG_CYD_ENABLE_TOUCH
+    button = create_button(120, 50, LV_ALIGN_CENTER, "Button", (void *) LV_ALIGN_TOP_MID);
+#endif
 
-    /**
-     * Create a button with a label and react on click event.
-    */
-    /*
-    button = lv_button_create(lv_screen_active()); //Add a button the current screen
-    lv_obj_align(button, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_size(button, 120, 50); //Set its size
-
-    // ensure the button background is visible
-    lv_obj_set_style_bg_color(button, lv_color_hex(0x0800FF), 0);
-    lv_obj_set_style_bg_opa(button, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_color(button, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_border_width(button, 2, 0);
-    lv_obj_add_event_cb(button, btn_event_cb, LV_EVENT_ALL, NULL); //Assign a callback to the button
-
-    lv_obj_t *label = lv_label_create(button); //Add a label to the button
-    lv_label_set_text(label, "Button"); //Set the labels text
-    lv_obj_center(label);
-
-    if (lv_indev_get_next(NULL) == NULL) {
-        printk("Warning: no LVGL input device registered; clicks will not be delivered\r\n");
-    }
-
-    */
 }
 
 void update_display() {
@@ -161,11 +176,8 @@ void update_display() {
     const uint32_t frames_per_second = (sleep_time_ms > 0) ? (1000u / sleep_time_ms) : 1u;
     const lv_coord_t hor = lv_disp_get_hor_res(NULL);
     const lv_coord_t ver = lv_disp_get_ver_res(NULL);
-    //const lv_coord_t dia = (lv_coord_t) (circle_radius * 2);
     lv_coord_t max_x = (hor > circle_radius * 2) ? (hor - circle_radius * 2) : 0; //210
     lv_coord_t max_y = (ver > circle_radius * 2) ? (ver - circle_radius * 2) : 0;  //290
-    //lv_coord_t max_x = 210;//(hor > circle_radius * 2) ? (hor - circle_radius * 2) : 0; //210
-    //lv_coord_t max_y = 290; //(ver > circle_radius * 2) ? (ver - circle_radius * 2) : 0;  //290
     //static lv_coord_t xpos2 = 205, ypos2 = 0;
     lv_obj_align(circle, LV_ALIGN_TOP_LEFT, xpos, ypos);
     lv_obj_align(circle2, LV_ALIGN_TOP_LEFT, xpos2, ypos2);
