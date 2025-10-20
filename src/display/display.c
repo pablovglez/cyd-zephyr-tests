@@ -7,6 +7,8 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/spi.h>
 #include <zephyr/input/input.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -14,6 +16,7 @@ static const struct gpio_dt_spec backlight = GPIO_DT_SPEC_GET(DT_ALIAS(backlight
 #if defined CONFIG_CYD_ENABLE_TOUCH
 static const struct device *const touch_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_touch));
 #endif
+LOG_MODULE_REGISTER(display);
 
 // Settings
 static const uint32_t sleep_time_ms = 50; // Target 20 FPS
@@ -165,6 +168,7 @@ void draw_content() {
     button = create_button(120, 50, LV_ALIGN_CENTER, "Button", (void *) LV_ALIGN_TOP_MID);
 #endif
 
+    LOG_INF("Info message example.");
 }
 
 void update_display() {
@@ -230,7 +234,6 @@ void update_display() {
     lv_obj_set_pos(circle2, xpos2, ypos2);
     // Must be called periodically
     lv_task_handler();
-    printk("Circle 2 positions (%d, %d)\n", xpos2, ypos2);
 
     k_msleep(sleep_time_ms);
 }

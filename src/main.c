@@ -1,8 +1,11 @@
 //#include "display/display_touch.h"
 #include "display/display.h"
 #include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
 #include <lvgl.h>
 
+LOG_MODULE_REGISTER(main);
 
 int main(void) {
 
@@ -13,6 +16,8 @@ int main(void) {
 
     return ret;
 */
+    (void)log_set_tag("cyd-zephyr-tests"); // Add once
+    LOG_INF("App cyd-zephyr-tests started.");
 
     lv_init();
 
