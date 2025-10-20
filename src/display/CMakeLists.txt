@@ -1,5 +1,7 @@
 # Create the library target
-add_library(display STATIC display.c)
+add_library(display STATIC display.c
+        display_touch.c
+        display_touch.h)
 
 # Add the library's header file(s)
 target_include_directories(display PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

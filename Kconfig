@@ -1,0 +1,12 @@
+mainmenu "Customized Menu Name"
+source "Kconfig.zephyr"
+
+menu "CYD application options"
+
+config CYD_ENABLE_TOUCH
+    bool "Enable touch support"
+    default n
+    help
+        Enable this option to include touch support in the application.
+
+endmenu
