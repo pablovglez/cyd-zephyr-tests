@@ -29,6 +29,7 @@
     chosen {
 		zephyr,display = &ili9341;
 		zephyr,touch = &xpt2046;
+		zephyr,flash = &flash0;
     };
 
 	lvgl_pointer {
@@ -126,7 +127,65 @@
 		reads = <4>;
 	};
 };
+/*
+First, I need to remove the existing partitions node under flash0,
+then I define a new partitions node with my custom partition layout.
 
+Check ~/zephyr/dts/vendor/espressif/ for reference partition tables according to the device.
+
+I dont need to redefine boot and sys partitions but I do it for clarity.
+
+*/
+&flash0 { /delete-node/ partitions; };
+&flash0 {
+
+	partitions {
+
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@1000 {
+			label = "mcuboot";
+			reg = <0x1000 DT_SIZE_K(60)>;
+		};
+
+		sys_partition: partition@10000 {
+			label = "sys";
+			reg = <0x10000 DT_SIZE_K(64)>;
+		};
+
+		/* Slot zero 1778 KB */
+		slot0_partition: partition@20000 {
+			label = "image-0";
+			reg = <0x20000 DT_SIZE_K(1778)>;
+		};
+
+		/* Slot zero 1778 KB */
+		slot1_partition: partition@1e0000 {
+			label = "image-1";
+			reg = <0x1E0000 DT_SIZE_K(1778)>;
+		};
+
+		/* Scratch partition 124 KB */
+		scratch_partition: partition@3e0000 {
+			label = "image-scratch";
+			reg = <0x3E0000 DT_SIZE_K(124)>;
+		};
+
+		/* Coredump partition 4 KB */
+		coredump_partition: partition@3ff000 {
+			label = "coredump";
+			reg = <0x3FF000 DT_SIZE_K(4)>;
+		};
+
+		/* Storage partition 192 KB */
+		storage_partition: partition@3b0000 {
+			label = "storage";
+			reg = <0x3B0000 DT_SIZE_K(192)>;
+		};
+	};
+};
 
 // &i2c0 {
 //     aht20: aht20@38 {

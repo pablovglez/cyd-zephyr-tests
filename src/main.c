@@ -18,6 +18,8 @@ int main(void) {
 */
     (void)log_set_tag("cyd-zephyr-tests"); // Add once
     LOG_INF("App cyd-zephyr-tests started.");
+    print_partition_info();
+
 
     lv_init();
 
