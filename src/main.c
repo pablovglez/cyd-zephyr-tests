@@ -1,9 +1,11 @@
-//#include "display/display_touch.h"
-#include "display/display.h"
+
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/logging/log_ctrl.h>
 #include <lvgl.h>
+#include "wifi/wifi.h"
+//#include "display/display_touch.h"
+#include "display/display.h"
 
 LOG_MODULE_REGISTER(main);
 
@@ -19,6 +21,9 @@ int main(void) {
     (void)log_set_tag("cyd-zephyr-tests"); // Add once
     LOG_INF("App cyd-zephyr-tests started.");
 
+#ifdef CONFIG_WIFI_SSID
+    init_wifi(CONFIG_WIFI_SSID, CONFIG_WIFI_PSK);
+#endif
     lv_init();
 
     init_display();

@@ -3,10 +3,51 @@ source "Kconfig.zephyr"
 
 menu "CYD application options"
 
+config PROJECT_NAME
+    string "Project Name"
+    default "CYD_ZEPHYR"
+    help
+        Set the project name for the application.
+
 config CYD_ENABLE_TOUCH
     bool "Enable touch support"
     default n
     help
         Enable this option to include touch support in the application.
+
+endmenu
+
+menu "Custom WiFi configuration"
+
+# Wifi configuration
+config WIFI_SSID
+    string "WiFi SSID"
+    default "some_ssid"
+    help
+        Set the SSID for WiFi connection.
+
+config WIFI_PSK
+    string "WiFi PSK"
+    default "some_password"
+    help
+        Set the PSK for WiFi connection.
+
+config WIFI_MAX_RETRY_COUNT
+    int "Maximum WiFi connection retry count"
+    default 5
+    help
+        Set the maximum number of retries for WiFi connection attempts.
+
+config WIFI_SHORT_RETRY_DELAY_SECONDS
+    int "Short retry delay in seconds."
+    default 2
+    help
+        Set the delay in seconds for short retry attempts.
+
+config WIFI_LONG_RETRY_DELAY_SECONDS
+    int "Long retry delay in seconds."
+    default 30
+    help
+        Set the delay in seconds for long retry attempts.
 
 endmenu
