@@ -1,41 +1,12 @@
 //#include "display/display_touch.h"
-#include "display/display.h"
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/logging/log_ctrl.h>
-#include <zephyr/fs/fs.h>
-#include <zephyr/fs/littlefs.h>
-#include <zephyr/storage/flash_map.h>
 #include <lvgl.h>
+#include "display/display.h"
+#include "settings/settings.h"
 
 LOG_MODULE_REGISTER(main);
-void print_partition_info(void)
-{
-    const struct flash_area *fa;
-    int rc;
-
-    /* Get slot0 partition info */
-    rc = flash_area_open(FIXED_PARTITION_ID(slot0_partition), &fa);
-    if (rc == 0) {
-        printk("Slot0: offset=0x%x, size=0x%x\n", fa->fa_off, fa->fa_size);
-        flash_area_close(fa);
-    }
-
-    /* Get slot1 partition info */
-    rc = flash_area_open(FIXED_PARTITION_ID(slot1_partition), &fa);
-    if (rc == 0) {
-        printk("Slot1: offset=0x%x, size=0x%x\n", fa->fa_off, fa->fa_size);
-        flash_area_close(fa);
-    }
-
-    /* Get storage partition info */
-    rc = flash_area_open(FIXED_PARTITION_ID(storage_partition), &fa);
-    if (rc == 0) {
-        printk("Storage: offset=0x%x, size=0x%x\n", fa->fa_off, fa->fa_size);
-        flash_area_close(fa);
-    }
-}
-
 
 int main(void) {
 
@@ -48,8 +19,7 @@ int main(void) {
 */
     (void)log_set_tag("cyd-zephyr-tests"); // Add once
     LOG_INF("App cyd-zephyr-tests started.");
-    print_partition_info();
-
+    load_persistent_settings();
 
     lv_init();
 

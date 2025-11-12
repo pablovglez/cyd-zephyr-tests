@@ -6,7 +6,14 @@ project(cyd-zephyr-tests)
 # Include the display
 add_subdirectory(src/display)
 
-target_sources(app PRIVATE src/main.c)
+# Include settings headers to avoid lfs.h: No such file error
+target_include_directories(app PRIVATE src/settings)
+
+# Add settings/ files directly to the app  to avoid lfs.h: No such file error
+target_sources(app PRIVATE
+        src/main.c
+        src/settings/settings.c
+)
 
 # Link the say_hello library to the application
 target_link_libraries(app PRIVATE display)
