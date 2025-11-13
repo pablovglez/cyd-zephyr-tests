@@ -37,7 +37,7 @@
 		input = <&xpt2046>;
 		invert-x;
 	};
-	
+
 	mipi_dbi {
 		compatible = "zephyr,mipi-dbi-spi";
 		dc-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
@@ -85,7 +85,7 @@
 						<SPIM3_SCLK_GPIO25>,
 						<SPIM3_CSEL_GPIO33>
 						;
-				};	
+				};
 				group2 {
 					pinmux = <SPIM3_MOSI_GPIO32>;
 					output-low;
@@ -102,7 +102,7 @@
 			<SPIM3_SCLK_GPIO25>,
 			<SPIM3_CSEL_GPIO33>
 			;
-	};	
+	};
 	group2 {
 		pinmux = <SPIM3_MOSI_GPIO32>;
 		output-low;

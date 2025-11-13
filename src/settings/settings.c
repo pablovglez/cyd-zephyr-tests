@@ -166,6 +166,9 @@ int load_persistent_settings() {
         }
     }
 
+    // Print the project name to confirm it was read correctly
+    LOG_INF("Loaded Settings - Project Name: %s\n", global_params.project_name);
+
     fs_close(&file);
     rc = fs_unmount(mountpoint);
 
