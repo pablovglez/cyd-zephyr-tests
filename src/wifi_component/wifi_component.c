@@ -6,7 +6,7 @@
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/net/net_event.h>
 #include <zephyr/net/hostname.h>
-#include "wifi.h"
+#include "wifi_component.h"
 
 static struct k_work_delayable wifi_reconnect_work;
 static int reconnect_attempts;
