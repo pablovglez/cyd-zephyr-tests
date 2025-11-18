@@ -248,3 +248,7 @@ int init_wifi(char *wifi_ssid, char *wifi_password) {
 
     return 0;
 }
+
+int is_wifi_connected() {
+    return device_online;
+}
