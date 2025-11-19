@@ -81,6 +81,16 @@ static void handle_wifi_disconnect_result(struct net_mgmt_event_callback *cb)
     if (status->status)
     {
         LOG_INF("Disconnection request (%d)\n", status->status);
+        if (status->status < 0) {
+            device_online = 0;
+            k_sem_take(&wifi_connected, K_NO_WAIT);
+            if (!reconnecting) {
+                reconnecting = true;
+                reconnect_attempts = 0;
+                // schedule immediate attempt
+                k_work_reschedule(&wifi_reconnect_work, K_SECONDS(15));
+            }
+        }
     }
     else{
         LOG_INF("Device is now disconnected\n");

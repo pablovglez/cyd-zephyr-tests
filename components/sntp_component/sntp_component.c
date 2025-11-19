@@ -14,60 +14,33 @@ LOG_MODULE_REGISTER(sntp);
 #define RETRY_DELAY_MS 2000
 #define QUERY_TIMEOUT_MS 5000
 
+static struct k_mutex sntp_mutex;
+
+
 static int get_ntp_time(struct sntp_time *sntp_time)
 {
     int ret;
-    struct sntp_ctx ctx;
-    struct sockaddr_in sntp_server;
     
-    // Setup server address first
-    sntp_server.sin_family = AF_INET;
-    sntp_server.sin_port = htons(SNTP_PORT);
+    k_mutex_lock(&sntp_mutex, K_FOREVER);
     
-    // Resolve server address
-    ret = net_ipaddr_parse(SNTP_SERVER, strlen(SNTP_SERVER), 
-                          (struct sockaddr *)&sntp_server);
-    if (ret <= 0) {
-        LOG_ERR("Cannot parse SNTP server address: %s", SNTP_SERVER);
-        return -EINVAL;
-    }
-    
-    // Initialize SNTP context with server address
-    ret = sntp_init(&ctx, (struct sockaddr *)&sntp_server, sizeof(sntp_server));
-    if (ret < 0) {
-        LOG_ERR("Failed to initialize SNTP context: %d", ret);
-        return ret;
-    }
-    
-    // Request time with retries
     for (int i = 0; i < MAX_RETRIES; i++) {
-        ret = sntp_query(&ctx, QUERY_TIMEOUT_MS, sntp_time);
+        ret = sntp_simple(SNTP_SERVER, QUERY_TIMEOUT_MS, sntp_time);
+        
         if (ret == 0) {
-            LOG_INF("SNTP query successful");
+            LOG_INF("SNTP sync successful");
             break;
-        }
-        
-        LOG_WRN("SNTP query failed (attempt %d/%d): %d", 
-                i + 1, MAX_RETRIES, ret);
-        
-        if (i < MAX_RETRIES - 1) {
-            k_msleep(RETRY_DELAY_MS);
+        } else {
+            LOG_WRN("SNTP query failed (attempt %d/%d): %d", 
+                    i + 1, MAX_RETRIES, ret);
+            
+            if (i < MAX_RETRIES - 1) {
+                k_msleep(RETRY_DELAY_MS);
+            }
         }
     }
     
-    sntp_close(&ctx);
+    k_mutex_unlock(&sntp_mutex);
     return ret;
-}
-
-static void print_time(const struct sntp_time *sntp_time)
-{
-    uint64_t timestamp = sntp_time->seconds;
-    
-    // Convert to human readable time
-    uint32_t year = 1970 + (timestamp % 31556952);
-    
-    LOG_INF("NTP Time received:");
-    LOG_INF("  Timestamp: %llu seconds since 1970", timestamp);
 }
 
 void sync_time_once(void)
@@ -77,19 +50,28 @@ void sync_time_once(void)
     
     // Wait for network to be ready
     while (!is_wifi_connected()) {
-        k_msleep(1000);
+        LOG_INF("Waiting for WiFi connection...");
+        k_msleep(15000);
     }
     
     LOG_INF("Attempting to sync time with NTP server...");
     
     ret = get_ntp_time(&sntp_time);
     if (ret == 0) {
-        print_time(&sntp_time);
-        
-        // You can set system time here if needed
-        // For example, using clock_settime() if CONFIG_POSIX_CLOCK is enabled
-        
-        LOG_INF("Time synchronized successfully");
+        LOG_DBG("Timestamp: %llu seconds since 1970", sntp_time.seconds);
+                
+        // Set system time
+            struct timespec tp = {
+                .tv_sec = sntp_time.seconds,
+                .tv_nsec = (sntp_time.fraction * 1000000000ULL) / 4294967296ULL
+            };
+
+            if (sys_clock_settime(CLOCK_REALTIME, &tp) == 0) {
+                LOG_INF("System time updated successfully");
+            } else {
+                LOG_ERR("Failed to set system time");
+            }
+
     } else {
         LOG_ERR("Failed to synchronize time: %d", ret);
     }
@@ -98,10 +80,8 @@ void sync_time_once(void)
 void sync_time_periodically(void)
 {
     while (1) {
-        sync_time_once();
-        
-        // Wait before next sync (e.g., every hour)
-        k_sleep(K_MINUTES(10));
-        //k_sleep(K_HOURS(1));
+        sync_time_once();       
+        // Wait before next sync
+        k_sleep(K_HOURS(1));
     }
 }

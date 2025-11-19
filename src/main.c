@@ -40,4 +40,4 @@ int main(void) {
 
 }
 
-K_THREAD_DEFINE(ntp_thread_id, 1024, sync_time_periodically, NULL, NULL, NULL, 7, 0, 0);
+K_THREAD_DEFINE(ntp_thread_id, 2048, sync_time_periodically, NULL, NULL, NULL, 7, 0, 0);
