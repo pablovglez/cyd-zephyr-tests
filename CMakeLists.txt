@@ -1,14 +1,20 @@
 cmake_minimum_required(VERSION 3.20.0)
-
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(cyd-zephyr-tests)
 
-# Include the display
-add_subdirectory(src/display)
-add_subdirectory(src/wifi_component)
-add_subdirectory(src/sntp_component)
+include(${ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
 
-target_sources(app PRIVATE src/main.c)
+# Add source files directly to the main app
+target_sources(app PRIVATE 
+    src/main.c
+    components/display_component/display_component.c
+    components/wifi_component/wifi_component.c
+    components/sntp_component/sntp_component.c
+)
 
-# Link the say_hello library to the application
-target_link_libraries(app PRIVATE display wifi_component sntp_component)
+# Add include directories
+target_include_directories(app PRIVATE
+    components/display_component
+    components/wifi_component
+    components/sntp_component
+)
