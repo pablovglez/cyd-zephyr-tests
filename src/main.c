@@ -3,10 +3,10 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/logging/log_ctrl.h>
 #include <lvgl.h>
-#include "wifi_component/wifi_component.h"
-#include "sntp_component/sntp_component.h"
+#include "wifi_component.h"
+#include "sntp_component.h"
 //#include "display/display_touch.h"
-//#include "display/display.h"
+//#include "display_component.h"
 
 LOG_MODULE_REGISTER(main);
 
@@ -25,7 +25,7 @@ int main(void) {
 #ifdef CONFIG_WIFI_SSID
     init_wifi(CONFIG_WIFI_SSID, CONFIG_WIFI_PSK);
 #endif
-    sync_time_once();
+    //sync_time_once();
     /*
     lv_init();
 
@@ -40,4 +40,4 @@ int main(void) {
 
 }
 
-//K_THREAD_DEFINE(ntp_thread_id, 1024, sync_time_periodically, NULL, NULL, NULL, 7, 0, 0);
+K_THREAD_DEFINE(ntp_thread_id, 1024, sync_time_periodically, NULL, NULL, NULL, 7, 0, 0);
