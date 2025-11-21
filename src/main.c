@@ -8,8 +8,7 @@
 #include <lvgl.h>
 #include "wifi_component.h"
 #include "sntp_component.h"
-//#include "display/display_touch.h"
-//#include "display_component.h"
+#include "display_component.h"
 #include "settings_component.h"
 #include "settings_names.h"
 
@@ -35,7 +34,6 @@ int main(void) {
     while (true) {
         update_display();
     }
-    */
 
 }
 

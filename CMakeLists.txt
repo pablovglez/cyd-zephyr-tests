@@ -18,4 +18,5 @@ target_include_directories(app PRIVATE
     components/display_component
     components/wifi_component
     components/sntp_component
+    components/settings_component
 )

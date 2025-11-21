@@ -5,7 +5,7 @@
 #include <zephyr/fs/littlefs.h>
 #include <zephyr/storage/flash_map.h>
 #include "settings_names.h"
-#include "settings.h"
+#include "settings_component.h"
 
 LOG_MODULE_REGISTER(settings);
 static int littlefs_flash_erase(unsigned int id)

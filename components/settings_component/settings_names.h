@@ -2,8 +2,8 @@
 // Created by efisio on 11/12/25.
 //
 
-#ifndef CYD_ZEPHYR_TESTS_SETTINGS_NAMES_H
-#define CYD_ZEPHYR_TESTS_SETTINGS_NAMES_H
+#ifndef SETTINGS_NAMES_H
+#define SETTINGS_NAMES_H
 
 #define UUID_SZ         37
 #define CONF_LINE_SIZE  64

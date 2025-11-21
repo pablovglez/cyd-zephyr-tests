@@ -15,4 +15,10 @@ config CYD_ENABLE_TOUCH
     help
         Enable this option to include touch support in the application.
 
+config DEPLOY_EMBEDDED
+    bool "Deploy on embedded target"
+    default y
+    help
+        Enable this option if running on a microcontroller
+
 endmenu
