@@ -6,7 +6,7 @@
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/net/net_event.h>
 #include <zephyr/net/hostname.h>
-#include "wifi.h"
+#include "wifi_component.h"
 
 static struct k_work_delayable wifi_reconnect_work;
 static int reconnect_attempts;
@@ -83,6 +83,16 @@ static void handle_wifi_disconnect_result(struct net_mgmt_event_callback *cb)
     if (status->status)
     {
         LOG_INF("Disconnection request (%d)\n", status->status);
+        if (status->status < 0) {
+            device_online = 0;
+            k_sem_take(&wifi_connected, K_NO_WAIT);
+            if (!reconnecting) {
+                reconnecting = true;
+                reconnect_attempts = 0;
+                // schedule immediate attempt
+                k_work_reschedule(&wifi_reconnect_work, K_SECONDS(15));
+            }
+        }
     }
     else{
         LOG_INF("Device is now disconnected\n");
@@ -253,4 +263,8 @@ int init_wifi(char *wifi_ssid, char *wifi_password, int settings_max_retry, int 
     connect_wifi();
 
     return 0;
+}
+
+int is_wifi_connected() {
+    return device_online;
 }

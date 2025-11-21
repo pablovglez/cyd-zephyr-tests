@@ -1,4 +1,4 @@
-#include "display.h"
+#include "display_component.h"
 #include <font/lv_font.h>
 #include <lvgl.h>
 #include <string.h>

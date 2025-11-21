@@ -6,11 +6,12 @@
 #include <zephyr/net/socket.h>
 #include <time.h>
 #include <lvgl.h>
-#include "wifi/wifi.h"
+#include "wifi_component.h"
+#include "sntp_component.h"
 //#include "display/display_touch.h"
-#include "display/display.h"
-#include "settings/settings.h"
-#include "settings/settings_names.h"
+//#include "display_component.h"
+#include "settings_component.h"
+#include "settings_names.h"
 
 LOG_MODULE_REGISTER(main);
 
@@ -34,5 +35,8 @@ int main(void) {
     while (true) {
         update_display();
     }
+    */
 
 }
+
+K_THREAD_DEFINE(ntp_thread_id, 2048, sync_time_periodically, NULL, NULL, NULL, 7, 0, 0);

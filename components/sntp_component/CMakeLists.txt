@@ -1,0 +1,4 @@
+zephyr_library()
+zephyr_library_sources(sntp_component.c)
+zephyr_library_include_directories(.)
+zephyr_library_link_libraries(wifi)
