@@ -13,6 +13,9 @@ typedef enum {
     PROJECT_NAME,
     WF_SSID,
     WF_PASS,
+    WF_MAX_RETRY,
+    WF_SHORT_RETRY_DELAY,
+    WF_LONG_RETRY_DELAY,
     PARAM_END
 } ParamEnum;
 
@@ -20,7 +23,9 @@ typedef struct Settings {
     char project_name[20];
     char wifi_ssid[UUID_SZ];
     char wifi_pass[UUID_SZ];
+    int wifi_max_retry;
+    int wifi_short_retry_delay;
+    int wifi_long_retry_delay;
 } PersistentSettings;
 
-extern PersistentSettings global_params;
 #endif //CYD_ZEPHYR_TESTS_SETTINGS_NAMES_H

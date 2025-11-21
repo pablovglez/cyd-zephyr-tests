@@ -49,36 +49,10 @@ static int littlefs_mount(struct fs_mount_t *mp)
 
     return 0;
 }
-/*
-static int littlefs_read_file(char *fname, char *file_content) {
-    struct fs_file_t file;
-    int rc;
 
-    fs_file_t_init(&file);
-    rc = fs_open(&file, fname, FS_O_READ);
-    if (rc < 0) {
-        LOG_ERR("FAIL: open %s: %d", fname, rc);
-        return rc;
-    }
-    rc = fs_read(&file, file_content, sizeof(file_content));
-    if (rc < 0) {
-        LOG_ERR("FAIL: read %s: [rd:%d]", fname, rc);
-        return rc;
-    }
-    LOG_PRINTK("%s read %d bytes\n", fname, rc);
-    LOG_PRINTK("------ FILE: %s ------\n", fname);
-    // Print the read data until rc
-    for (int i = 0; i < rc; i++) {
-        LOG_PRINTK("%c", file_content[i]);
-    }
-    LOG_PRINTK("\n");
-    return 0;
-}*/
-
-int load_persistent_settings() {
+int load_persistent_settings(PersistentSettings *params_p) {
     ParamEnum next = PROJECT_NAME;
     char line[CONF_LINE_SIZE];
-    PersistentSettings global_params = {"ESP32", "fake_ap", "fake_pass"};
     char fname[255];
     uint8_t buf[256];
     ssize_t nread;
@@ -134,18 +108,30 @@ int load_persistent_settings() {
                     val++; /* point after '=' */
                     switch (next) {
                         case PROJECT_NAME:
-                            strncpy(global_params.project_name, val, sizeof(global_params.project_name) - 1);
-                            global_params.project_name[sizeof(global_params.project_name) - 1] = '\0';
+                            strncpy(params_p->project_name, val, sizeof(params_p->project_name) - 1);
+                            params_p->project_name[sizeof(params_p->project_name) - 1] = '\0';
                             next = WF_SSID;
                             break;
                         case WF_SSID:
-                            strncpy(global_params.wifi_ssid, val, sizeof(global_params.wifi_ssid) - 1);
-                            global_params.wifi_ssid[sizeof(global_params.wifi_ssid) - 1] = '\0';
+                            strncpy(params_p->wifi_ssid, val, sizeof(params_p->wifi_ssid) - 1);
+                            params_p->wifi_ssid[sizeof(params_p->wifi_ssid) - 1] = '\0';
                             next = WF_PASS;
                             break;
                         case WF_PASS:
-                            strncpy(global_params.wifi_pass, val, sizeof(global_params.wifi_pass) - 1);
-                            global_params.wifi_pass[sizeof(global_params.wifi_pass) - 1] = '\0';
+                            strncpy(params_p->wifi_pass, val, sizeof(params_p->wifi_pass) - 1);
+                            params_p->wifi_pass[sizeof(params_p->wifi_pass) - 1] = '\0';
+                            next = WF_MAX_RETRY;
+                            break;
+                        case WF_MAX_RETRY:
+                            params_p->wifi_max_retry = atoi(val);
+                            next = WF_SHORT_RETRY_DELAY;
+                            break;
+                        case WF_SHORT_RETRY_DELAY:
+                            params_p->wifi_short_retry_delay = atoi(val);
+                            next = WF_LONG_RETRY_DELAY;
+                            break;
+                        case WF_LONG_RETRY_DELAY:
+                            params_p->wifi_long_retry_delay = atoi(val);
                             next = PARAM_END;
                             break;
                         case PARAM_END:
@@ -167,7 +153,7 @@ int load_persistent_settings() {
     }
 
     // Print the project name to confirm it was read correctly
-    LOG_INF("Loaded Settings - Project Name: %s\n", global_params.project_name);
+    LOG_INF("Loaded Settings - Project Name: %s\n", params_p->project_name);
 
     fs_close(&file);
     rc = fs_unmount(mountpoint);

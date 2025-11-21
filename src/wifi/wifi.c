@@ -18,8 +18,10 @@ int s_retry_num = 0;
 
 bool device_online = 0;
 
-char* global_wifi_ssid = NULL;
-char* global_wifi_password = NULL;
+
+int wifi_max_retry_count=5;
+int wifi_short_retry_delay_seconds=2;
+int wifi_long_retry_delay_seconds=30;
 
 struct wifi_connect_req_params wifi_params = {0};
 
@@ -44,12 +46,12 @@ static void reconnect_work_handler(struct k_work *work)
     connect_wifi();
     reconnect_attempts++;
 
-    if (reconnect_attempts < CONFIG_WIFI_MAX_RETRY_COUNT) {
+    if (reconnect_attempts < wifi_max_retry_count) {
         // quick retry loop
-        k_work_reschedule(&wifi_reconnect_work, K_SECONDS(CONFIG_WIFI_SHORT_RETRY_DELAY_SECONDS));
+        k_work_reschedule(&wifi_reconnect_work, K_SECONDS(wifi_short_retry_delay_seconds));
     } else {
         // switch to longer periodic retry
-        k_work_reschedule(&wifi_reconnect_work, K_SECONDS(CONFIG_WIFI_LONG_RETRY_DELAY_SECONDS));
+        k_work_reschedule(&wifi_reconnect_work, K_SECONDS(wifi_long_retry_delay_seconds));
     }
 }
 
@@ -153,7 +155,7 @@ int connect_wifi()
     int err = 0;
 
     LOG_INF("Connecting to SSID: %s\n", wifi_params.ssid);
-    if (s_retry_num < CONFIG_WIFI_MAX_RETRY_COUNT) {
+    if (s_retry_num < wifi_max_retry_count) {
         err = net_mgmt(NET_REQUEST_WIFI_CONNECT, iface, &wifi_params, sizeof(struct wifi_connect_req_params));
         s_retry_num++;
         LOG_INF("Retry to connect to the AP\n");
@@ -202,10 +204,14 @@ void set_device_hostname() {
     }
 }
 
-int init_wifi(char *wifi_ssid, char *wifi_password) {
+int init_wifi(char *wifi_ssid, char *wifi_password, int settings_max_retry, int settings_short_delay, int settings_long_delay) {
     set_device_hostname();
 
     LOG_INF("Setting Wifi Client");
+    //Parse parameters
+    wifi_max_retry_count=settings_max_retry;
+    wifi_short_retry_delay_seconds=settings_short_delay;
+    wifi_long_retry_delay_seconds=settings_long_delay;
 
     if(wifi_ssid != NULL && wifi_password != NULL){
 
